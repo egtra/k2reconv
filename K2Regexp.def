@@ -1,0 +1,9 @@
+LIBRARY     "K2Regexp"
+DESCRIPTION "K2Regexp DLL"
+EXPORTS
+	    BMatch
+		BSubst
+		BTrans
+		BSplit
+		BRegfree
+		BRegexpVersion
