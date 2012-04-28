@@ -42,10 +42,10 @@ LRESULT OnImeRequestReconvertString(HWND hwnd, RECONVERTSTRING* prcs)
 	}
 
 	//選択範囲（キャレット）を含む行を探す（その行にある文字列すべてを得るため）
-	LRESULT lineNumberOfStartPos = Edit_LineFromChar(hwnd, first);
+	auto lineNumberOfStartPos = Edit_LineFromChar(hwnd, first);
 
 	//行末を探す（EM_GETLINEがWORDで文字列指定するため、WORDの最大値を上限としている）
-	WORD lineLength = static_cast<WORD>(std::min(
+	auto lineLength = static_cast<WORD>(std::min(
 		static_cast<int>(std::numeric_limits<WORD>::max()),
 		Edit_LineLength(hwnd, lineNumberOfStartPos)));
 
@@ -59,7 +59,7 @@ LRESULT OnImeRequestReconvertString(HWND hwnd, RECONVERTSTRING* prcs)
 		last = first + lineLength;
 		Edit_SetSel(hwnd, first, last);
 	}
-	DWORD selectedLength = last - first; //選択部分の長さ（選択範囲がなければそのまま0で良い）
+	auto selectedLength = last - first; //選択部分の長さ（選択範囲がなければそのまま0で良い）
 	LRESULT lr = sizeof (RECONVERTSTRING) + lineLength + 1;
 	if (prcs != nullptr)
 	{
@@ -69,12 +69,12 @@ LRESULT OnImeRequestReconvertString(HWND hwnd, RECONVERTSTRING* prcs)
 
 		//必要な情報の設定
 		//1行分の文字列と変換部分のオフセットを渡すようにしている
-		PTSTR dst = reinterpret_cast<PTSTR>(&prcs[1]);
+		auto dst = reinterpret_cast<PTSTR>(&prcs[1]);
 		_tcsncpy(dst, buf.data(), buf.size());
 		dst[buf.size()] = TEXT('\0');
 
-		DWORD lineStartingPos = Edit_LineIndex(hwnd, lineNumberOfStartPos);
-		DWORD strOffset = first - lineStartingPos;
+		auto lineStartingPos = static_cast<DWORD>(Edit_LineIndex(hwnd, lineNumberOfStartPos));
+		auto strOffset = first - lineStartingPos;
 		prcs->dwStrLen = bufLen;
 		prcs->dwStrOffset = sizeof *prcs;
 		prcs->dwCompStrLen = selectedLength;
@@ -110,7 +110,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 void InitializeReconv()
 {
-	if (HWND const hwndTarget = FindEditWindow())
+	if (auto const hwndTarget = FindEditWindow())
 	{
 		oldWindowProc = SubclassWindow(hwndTarget, WindowProc);
 	}

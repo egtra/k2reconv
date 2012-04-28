@@ -1,31 +1,25 @@
 #include "stdafx.h"
+#include <array>
+#include <Shlwapi.h>
 
 void InitializeReconv();
+extern HMODULE hModuleSelf;
 
 namespace
 {
 
 HMODULE hmodK2RegexpOriginal;
 
-typedef int (*PFNBMatch)(char* str,char *target, char *targetstartp, char *targetendp, int one_shot,
-		BREGEXP **rxp,char *msg);
-typedef int (*PFNBSubst)(char* str, char *target, char *targetstartp, char *targetendp,
-		BREGEXP **rxp, char *msg, BCallBack callback);
-typedef int (*PFNBTrans)(char* str, char *target, char *targetendp,
-		BREGEXP **rxp, char *msg);
-typedef int (*PFNBSplit)(char* str, char *target, char *targetendp,
-		int limit, BREGEXP **rxp, char *msg);
-typedef void (*PFNBRegfree)(BREGEXP* rx);
-typedef char* (*PFNBRegexpVersion)(void);
+#define DEFINE(name) decltype(&name) pfn ## name ## Original
+#define INIT(name) (pfn ## name ## Original = reinterpret_cast<decltype(&name)>(GetProcAddress(hmodK2RegexpOriginal, #name)))
 
-PFNBMatch pfnBMatchOriginal;
-PFNBSubst pfnBSubstOriginal;
-PFNBTrans pfnBTransOriginal;
-PFNBSplit pfnBSplitOriginal;
-PFNBRegfree pfnBRegfreeOriginal;
-PFNBRegexpVersion pfnBRegexpVersionOriginal;
+DEFINE(BMatch);
+DEFINE(BSubst);
+DEFINE(BTrans);
+DEFINE(BSplit);
+DEFINE(BRegfree);
+DEFINE(BRegexpVersion);
 
-#define INIT(name) (pfn ## name ## Original = reinterpret_cast<PFN ## name>(GetProcAddress(hmodK2RegexpOriginal, #name)))
 void Initialize()
 {
 	if (hmodK2RegexpOriginal != NULL)
@@ -33,7 +27,11 @@ void Initialize()
 		return;
 	}
 
-	hmodK2RegexpOriginal = LoadLibrary(TEXT("K2Regexp-Original.dll"));
+	std::array<TCHAR, MAX_PATH> path;
+	::GetModuleFileName(hModuleSelf, path.data(), MAX_PATH);
+	::PathRemoveFileSpec(path.data());
+	::PathAppend(path.data(), TEXT("K2Regexp-Original.dll"));
+	hmodK2RegexpOriginal = LoadLibrary(path.data());
 
 	INIT(BMatch);
 	INIT(BSubst);
