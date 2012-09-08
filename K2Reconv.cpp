@@ -42,12 +42,12 @@ LRESULT OnImeRequestReconvertString(HWND hwnd, RECONVERTSTRING* prcs)
 	}
 
 	//選択範囲（キャレット）を含む行を探す（その行にある文字列すべてを得るため）
-	auto lineNumberOfStartPos = Edit_LineFromChar(hwnd, first);
+	auto lineNumberOfStartPos = Edit_LineFromChar(hwnd, -1);
 
 	//行末を探す（EM_GETLINEがWORDで文字列指定するため、WORDの最大値を上限としている）
 	auto lineLength = static_cast<WORD>(std::min(
 		static_cast<int>(std::numeric_limits<WORD>::max()),
-		Edit_LineLength(hwnd, lineNumberOfStartPos)));
+		Edit_LineLength(hwnd, -1)));
 
 	if (lineLength == 0)
 	{
